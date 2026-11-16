@@ -64,12 +64,14 @@ interface WorkspaceContextValue {
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(undefined);
-const AUTH_ROUTES = ['/login', '/register'];
+const AUTH_ROUTES = ['/login', '/register', '/welcome'];
+const PUBLIC_ROUTES = ['/', '/login', '/register', '/welcome'];
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isAuthPage = AUTH_ROUTES.includes(pathname);
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -113,6 +115,19 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loadBundle = useCallback(async (wsId?: string) => {
+    const hasToken =
+      typeof window !== 'undefined' && Boolean(window.localStorage.getItem('orbitflow_token'));
+
+    if (!hasToken) {
+      setUser(null);
+      setWorkspaces([]);
+      setLoading(false);
+      if (!PUBLIC_ROUTES.includes(window.location.pathname)) {
+        router.replace('/login');
+      }
+      return;
+    }
+
     setLoading(true);
     try {
       const bundle = await apiService.getBundle(wsId);
@@ -124,8 +139,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       setMembers(bundle.members);
       setActivities(bundle.activities);
     } catch {
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem('orbitflow_token');
+      }
       setUser(null);
-      if (!AUTH_ROUTES.includes(window.location.pathname)) {
+      if (!PUBLIC_ROUTES.includes(window.location.pathname)) {
         router.replace('/login');
       }
     } finally {
@@ -359,9 +377,9 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         notify,
       }}
     >
-      {isAuthPage ? (
+      {isAuthPage || (!user && pathname === '/') ? (
         children
-      ) : !user && !loading ? null : (
+      ) : !user && !loading && !isPublicRoute ? null : (
         <AppShell
           currentUser={user}
           workspaces={workspaces}
