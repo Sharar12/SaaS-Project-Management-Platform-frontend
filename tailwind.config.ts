@@ -28,6 +28,10 @@ const config: Config = {
         xs: '2px',
       },
       keyframes: {
+        pageEnter: {
+          '0%': { opacity: '0', transform: 'translateY(10px) scale(0.995)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
@@ -58,6 +62,7 @@ const config: Config = {
         },
       },
       animation: {
+        'page-enter': 'pageEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1)',
         'fade-in': 'fadeIn 0.22s ease-out',
         'scale-in': 'scaleIn 0.24s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-in-right': 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
