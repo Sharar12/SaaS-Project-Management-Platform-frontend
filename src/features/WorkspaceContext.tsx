@@ -179,7 +179,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     await apiService.logout();
     setUser(null);
     setWorkspaces([]);
-    router.replace('/login');
+    router.replace('/');
   };
 
   const activeWorkspace = useMemo(
