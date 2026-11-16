@@ -24,7 +24,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md" padding="lg">
+      <Card className="w-full max-w-md animate-auth-enter shadow-soft" padding="lg">
         <div className="flex items-center gap-2.5 mb-6">
           <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
             <Sparkles className="w-4 h-4" />

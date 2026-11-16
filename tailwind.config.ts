@@ -29,7 +29,11 @@ const config: Config = {
       },
       keyframes: {
         pageEnter: {
-          '0%': { opacity: '0', transform: 'translateY(10px) scale(0.995)' },
+          '0%': { opacity: '0', transform: 'translateY(12px) scale(0.99)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        authEnter: {
+          '0%': { opacity: '0', transform: 'translateY(24px) scale(0.96)' },
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
         fadeIn: {
@@ -62,7 +66,8 @@ const config: Config = {
         },
       },
       animation: {
-        'page-enter': 'pageEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1)',
+        'page-enter': 'pageEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+        'auth-enter': 'authEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         'fade-in': 'fadeIn 0.22s ease-out',
         'scale-in': 'scaleIn 0.24s cubic-bezier(0.16, 1, 0.3, 1)',
         'slide-in-right': 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
