@@ -12,3 +12,4 @@ export * from './patterns/AppShell';
 export * from './patterns/EmptyState';
 export * from './patterns/StatCard';
 export * from './patterns/Toast';
+export * from './patterns/Reveal';
