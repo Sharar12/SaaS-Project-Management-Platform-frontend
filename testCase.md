@@ -464,8 +464,8 @@ Ensure both servers are running:
 ## Test Execution Summary
 
 - **Total Test Cases:** 27 Detailed Scenarios
-- **Passed (`[?]`):** 27
-- **Failed (`[?]`):** 0
-- **Pending (`[ ]`):** 0
+- **Passed ([✓]):** 27
+- **Failed ([✗]):** 0
+- **Pending ([ ]):** 0
 - **Tested By:** Antigravity Automated QA Runner
 - **Date Tested:** 2026-11-16
