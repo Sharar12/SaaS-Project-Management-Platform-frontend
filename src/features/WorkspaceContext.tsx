@@ -201,7 +201,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     setAllTasks(bundle.tasks);
     setAllMembers(bundle.members);
     setAllActivities(bundle.activities);
-    notify('Mock database restored to clean seed state', 'info');
+    notify('Database restored to clean seed state', 'info');
   };
 
   return (

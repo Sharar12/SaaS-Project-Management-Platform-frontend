@@ -139,21 +139,14 @@ export function SettingsView() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-              {API_MODE === 'mock' ? (
-                <Database className="w-5 h-5" />
-              ) : (
-                <Server className="w-5 h-5" />
-              )}
+              <Server className="w-5 h-5 text-indigo-600" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900">
-                API Mode: <span className="uppercase text-indigo-600">{API_MODE}</span>
+                API Mode: <span className="uppercase text-emerald-600">{API_MODE} (MySQL saas_bd)</span>
               </h3>
               <p className="text-xs text-slate-500 mt-0.5 max-w-lg leading-relaxed">
-                Currently powered by <code>src/mock-backend/</code> with browser{' '}
-                <code>localStorage</code> persistence. Once Laravel + MySQL is built in{' '}
-                <code>backend/</code>, delete <code>src/mock-backend/</code> and point{' '}
-                <code>src/services/apiService.ts</code> to your Laravel endpoints.
+                Connected to Laravel backend running on <code>http://127.0.0.1:8000/api/v1</code> with MySQL database <code>saas_bd</code>.
               </p>
             </div>
           </div>
@@ -163,7 +156,7 @@ export function SettingsView() {
             leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
             onClick={resetDemo}
           >
-            Reset Mock Data
+            Reset Database
           </Button>
         </div>
       </Card>
