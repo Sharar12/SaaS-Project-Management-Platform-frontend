@@ -29,16 +29,21 @@ export function Avatar({
   status,
 }: AvatarProps) {
   return (
-    <div className="relative inline-flex shrink-0" title={name}>
+    <div className="relative inline-flex shrink-0 group" title={name}>
       <div
-        className={`${SIZES[size]} ${colorClass} rounded-full text-white font-semibold flex items-center justify-center ring-2 ring-white transition-transform duration-150 hover:scale-105`}
+        className={`${SIZES[size]} ${colorClass} rounded-full text-white font-semibold flex items-center justify-center ring-2 ring-white shadow-xs transition-transform duration-200 group-hover:scale-105`}
       >
         {initials}
       </div>
       {status && (
-        <span
-          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-white ${STATUS_DOT[status]}`}
-        />
+        <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
+          {status === 'online' && (
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+          )}
+          <span
+            className={`relative inline-flex rounded-full h-2.5 w-2.5 ring-2 ring-white ${STATUS_DOT[status]}`}
+          />
+        </span>
       )}
     </div>
   );

@@ -491,69 +491,175 @@ export function LandingPageView() {
         </div>
       </section>
 
-      {/* Bento Features Grid */}
-      <section id="features" className="py-24 border-t border-slate-100 bg-slate-50/40">
+      {/* Modern Bento Visual Showcase Grid with Asymmetric Sizing & Positions */}
+      <section id="features" className="py-24 border-t border-slate-100 bg-slate-50/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal animation="zoom-in" duration={600}>
-            <div className="text-center max-w-2xl mx-auto mb-14">
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-                Built for focus, scale, and absolute clarity
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <Badge tone="indigo" dot>
+                Bento Architecture
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3 tracking-tight">
+                Engineered with precision for modern SaaS teams
               </h2>
               <p className="text-sm text-slate-500 mt-2">
-                Every primitive is engineered for speed on a clean white workspace.
+                Every screen is crafted for clarity, instant responsiveness, and high data density.
               </p>
             </div>
           </Reveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                icon: <ShieldCheck className="w-5 h-5 text-indigo-600" />,
-                title: 'Strict Tenant Isolation',
-                desc: 'Company A and Company B never cross paths—enforced by Laravel Policies and scoped queries.',
-                anim: 'fade-up' as const,
-              },
-              {
-                icon: <Kanban className="w-5 h-5 text-sky-600" />,
-                title: 'Fluid Kanban Boards',
-                desc: 'Drag tasks across customizable workflow stages with optimistic updates and live badges.',
-                anim: 'fade-up' as const,
-              },
-              {
-                icon: <GanttChartSquare className="w-5 h-5 text-emerald-600" />,
-                title: 'Multi-Month Timelines',
-                desc: 'Visual roadmap scheduling spanning weeks and months so deadlines never slip.',
-                anim: 'fade-up' as const,
-              },
-              {
-                icon: <Users className="w-5 h-5 text-amber-600" />,
-                title: 'Role-Based Permissions',
-                desc: 'Owner, Admin, Member, and Viewer scopes keep company settings and projects safe.',
-                anim: 'fade-up' as const,
-              },
-              {
-                icon: <FolderKanban className="w-5 h-5 text-rose-600" />,
-                title: 'Task Drawers & Checklists',
-                desc: 'Slide-over detail drawers unite subtasks, comments, priorities, and due dates.',
-                anim: 'fade-up' as const,
-              },
-              {
-                icon: <Layers className="w-5 h-5 text-violet-600" />,
-                title: 'Decoupled Architecture',
-                desc: 'Next.js + TypeScript frontend paired cleanly with PHP Laravel + MySQL REST APIs.',
-                anim: 'fade-up' as const,
-              },
-            ].map((f, i) => (
-              <Reveal key={f.title} animation={f.anim} delay={i * 100} duration={650}>
-                <Card interactive padding="lg" className="group h-full">
-                  <div className="w-11 h-11 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
-                    {f.icon}
+          {/* Asymmetric Bento Box Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 auto-rows-[280px]">
+            
+            {/* Bento 1: Large Featured Hero Card (2 cols, 2 rows) */}
+            <div className="md:col-span-2 md:row-span-2">
+              <Reveal animation="fade-right" duration={750} className="h-full">
+                <div className="group relative h-full rounded-3xl overflow-hidden border border-slate-200/90 bg-white shadow-soft hover:shadow-soft-hover transition-all duration-300 flex flex-col justify-between p-6 sm:p-8">
+                  <div className="relative z-10">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold mb-3">
+                      <LayoutDashboard className="w-3.5 h-3.5" /> Core Workspace
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+                      All your companies and projects in one synchronized view
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-2 max-w-md leading-relaxed">
+                      Instant multi-workspace switching with composite query indexing. Switch from SaaS Engineering to Design Studio without missing a beat.
+                    </p>
                   </div>
-                  <h3 className="text-sm font-bold text-slate-900">{f.title}</h3>
-                  <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">{f.desc}</p>
-                </Card>
+
+                  <div className="relative mt-6 rounded-2xl overflow-hidden border border-slate-200/80 shadow-md group-hover:scale-[1.02] transition-transform duration-500">
+                    <img
+                      src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80"
+                      alt="Multi-company Analytics and Project Dashboard"
+                      className="w-full h-56 sm:h-64 object-cover object-top"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent flex items-end p-4">
+                      <span className="text-xs font-semibold text-white">Live Data Scoping • MySQL saas_db</span>
+                    </div>
+                  </div>
+                </div>
               </Reveal>
-            ))}
+            </div>
+
+            {/* Bento 2: Vertical Portrait Card (1 col, 2 rows) */}
+            <div className="md:col-span-1 md:row-span-2">
+              <Reveal animation="fade-down" delay={150} duration={750} className="h-full">
+                <div className="group relative h-full rounded-3xl overflow-hidden border border-slate-200/90 bg-white shadow-soft hover:shadow-soft-hover transition-all duration-300 flex flex-col justify-between p-6">
+                  <div>
+                    <div className="w-10 h-10 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
+                      <GanttChartSquare className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900">Multi-Month Gantt Roadmaps</h3>
+                    <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                      Visualize deliverables, milestone schedules, and project deadlines across quarters.
+                    </p>
+                  </div>
+
+                  <div className="relative mt-4 rounded-2xl overflow-hidden border border-slate-200/80 shadow-xs h-64 group-hover:scale-[1.02] transition-transform duration-500">
+                    <img
+                      src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"
+                      alt="Product Roadmaps & Schedules"
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 to-transparent flex items-end p-3.5">
+                      <p className="text-[11px] font-bold text-sky-300">Quarterly Milestones</p>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+
+            {/* Bento 3: Square Compact Card (1 col, 1 row) */}
+            <div className="md:col-span-1 md:row-span-1">
+              <Reveal animation="fade-left" delay={250} duration={700} className="h-full">
+                <div className="group relative h-full rounded-3xl overflow-hidden border border-slate-200/90 bg-white shadow-soft hover:shadow-soft-hover transition-all duration-300 p-6 flex flex-col justify-between">
+                  <div>
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900">Tenant Isolation</h3>
+                    <p className="text-xs text-slate-500 mt-1">Laravel Policy & scoped database constraints.</p>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100 text-[11px] font-semibold text-emerald-700">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Zero cross-company data leakage</span>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+
+            {/* Bento 4: Square Image Card with Badge (1 col, 1 row) */}
+            <div className="md:col-span-1 md:row-span-1">
+              <Reveal animation="zoom-in" delay={300} duration={700} className="h-full">
+                <div className="group relative h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-soft hover:shadow-soft-hover transition-all duration-300">
+                  <img
+                    src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80"
+                    alt="High performance collaborative teamwork"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent p-5 flex flex-col justify-end text-white">
+                    <p className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Team Alignment</p>
+                    <p className="text-sm font-semibold">Collaborate with live presence</p>
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+
+            {/* Bento 5: Wide Card with Stats & Graphic (2 cols, 1 row) */}
+            <div className="md:col-span-2 md:row-span-1">
+              <Reveal animation="fade-up" delay={200} duration={750} className="h-full">
+                <div className="group relative h-full rounded-3xl overflow-hidden border border-slate-200/90 bg-white shadow-soft hover:shadow-soft-hover transition-all duration-300 p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <div className="space-y-2 max-w-sm">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[11px] font-bold">
+                      <FolderKanban className="w-3.5 h-3.5" /> Interactive Drawer
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900">Subtask Checklists & Discussions</h3>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Slide-out drawer keeps subtasks, file links, and team comments in one place without leaving the board.
+                    </p>
+                  </div>
+
+                  <div className="relative w-full sm:w-48 h-32 rounded-2xl overflow-hidden border border-slate-200/80 shrink-0">
+                    <img
+                      src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80"
+                      alt="Developer code review and task check-offs"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+
+            {/* Bento 6: Wide Horizontal Card with Realtime RBAC (2 cols, 1 row) */}
+            <div className="md:col-span-2 md:row-span-1">
+              <Reveal animation="fade-left" delay={350} duration={750} className="h-full">
+                <div className="group relative h-full rounded-3xl overflow-hidden border border-slate-200/90 bg-white shadow-soft hover:shadow-soft-hover transition-all duration-300 p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <div className="space-y-2 max-w-sm">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[11px] font-bold">
+                      <Users className="w-3.5 h-3.5" /> Granular Roles
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900">Owner, Admin, Member & Viewer RBAC</h3>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Admins control member invites and billing while Viewers have secure read-only transparency.
+                    </p>
+                  </div>
+
+                  <div className="relative w-full sm:w-48 h-32 rounded-2xl overflow-hidden border border-slate-200/80 shrink-0">
+                    <img
+                      src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80"
+                      alt="Team Leader and RBAC role assignment"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+
           </div>
         </div>
       </section>

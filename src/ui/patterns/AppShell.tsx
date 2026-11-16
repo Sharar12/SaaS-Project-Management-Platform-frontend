@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -70,13 +70,25 @@ export function AppShell({
   const pathname = usePathname();
   const [wsOpen, setWsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-white border-r border-slate-200/80">
       <div className="p-4 border-b border-slate-100">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+        <div className="flex items-center justify-between mb-3.5">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center shadow-sm transition-transform duration-200 group-hover:scale-105 group-hover:rotate-3">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
@@ -85,7 +97,7 @@ export function AppShell({
               </span>
               <span className="text-[10px] font-medium text-slate-400">Multi-Company SaaS</span>
             </div>
-          </div>
+          </Link>
           <button
             onClick={() => setMobileOpen(false)}
             className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-slate-100"
@@ -94,31 +106,35 @@ export function AppShell({
           </button>
         </div>
 
-        {/* Company Switcher */}
+        {/* Interactive Company Switcher */}
         <div className="relative">
           <button
             onClick={() => setWsOpen((v) => !v)}
-            className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white border border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/70 transition-all text-left"
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-2xl bg-white border border-slate-200/90 shadow-xs hover:border-indigo-200 hover:shadow-soft transition-all duration-200 text-left"
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <span
-                className="w-2.5 h-2.5 rounded-full shrink-0"
+                className="w-2.5 h-2.5 rounded-full shrink-0 ring-4 ring-slate-100"
                 style={{ backgroundColor: activeWorkspace?.accentColor ?? '#4F46E5' }}
               />
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-slate-900 truncate">
+                <p className="text-xs font-bold text-slate-900 truncate">
                   {activeWorkspace?.name ?? 'No Company Yet'}
                 </p>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
                   {activeWorkspace?.myRole ?? 'create'} • {activeWorkspace?.plan ?? 'pro'}
                 </p>
               </div>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${
+                wsOpen ? 'rotate-180 text-indigo-600' : ''
+              }`}
+            />
           </button>
 
           {wsOpen && (
-            <div className="absolute left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg p-1.5 z-30 animate-scale-in">
+            <div className="absolute left-0 right-0 mt-2 bg-white border border-slate-200/90 rounded-2xl shadow-glass p-1.5 z-30 animate-scale-in">
               {workspaces.map((ws) => (
                 <button
                   key={ws.id}
@@ -126,7 +142,7 @@ export function AppShell({
                     onSelectWorkspace(ws.id);
                     setWsOpen(false);
                   }}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-xs transition-colors ${
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-left text-xs transition-all ${
                     ws.id === activeWorkspace?.id
                       ? 'bg-indigo-50 text-indigo-700 font-semibold'
                       : 'text-slate-700 hover:bg-slate-50'
@@ -146,7 +162,7 @@ export function AppShell({
                   setWsOpen(false);
                   onCreateCompanyClick();
                 }}
-                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors"
+                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors"
               >
                 <Building2 className="w-3.5 h-3.5" />
                 Create New Company
@@ -156,8 +172,9 @@ export function AppShell({
         </div>
       </div>
 
+      {/* Navigation with active accent indicator */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+        <p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
           Company Menu
         </p>
         {NAV_ITEMS.map((item) => {
@@ -168,15 +185,18 @@ export function AppShell({
               key={item.href}
               href={item.href}
               onClick={() => setMobileOpen(false)}
-              className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+              className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 active
-                  ? 'bg-indigo-50/90 text-indigo-700 shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-indigo-50/90 text-indigo-700 font-semibold shadow-[inset_0_0_0_1px_rgba(99,102,241,0.15)]'
+                  : 'text-slate-600 hover:bg-slate-50/90 hover:text-slate-900 hover:translate-x-0.5'
               }`}
             >
+              {active && (
+                <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-indigo-600" />
+              )}
               <Icon
-                className={`w-4 h-4 transition-transform duration-150 group-hover:scale-110 ${
-                  active ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'
+                className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${
+                  active ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-700'
                 }`}
               />
               <span>{item.label}</span>
@@ -187,9 +207,9 @@ export function AppShell({
 
       {/* Logged-in User Footer */}
       <div className="p-3 border-t border-slate-100">
-        <div className="p-3 rounded-2xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between gap-2">
+        <div className="p-3 rounded-2xl bg-slate-50/70 border border-slate-200/70 flex items-center justify-between gap-2 hover:border-slate-300 transition-colors">
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-slate-900 truncate">
+            <p className="text-xs font-bold text-slate-900 truncate">
               {currentUser?.name ?? 'User'}
             </p>
             <p className="text-[11px] text-slate-500 truncate">{currentUser?.email}</p>
@@ -197,7 +217,7 @@ export function AppShell({
           <button
             onClick={onLogoutClick}
             title="Sign out"
-            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 transition-colors shrink-0"
+            className="p-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50/50 transition-all active:scale-95 shrink-0"
           >
             <LogOut className="w-3.5 h-3.5" />
           </button>
@@ -215,33 +235,37 @@ export function AppShell({
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
-            className="fixed inset-0 bg-slate-900/25 backdrop-blur-[1px]"
+            className="fixed inset-0 bg-slate-900/25 backdrop-blur-xs animate-fade-in"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="relative z-10 w-64 h-full bg-white shadow-2xl">
+          <aside className="relative z-10 w-64 h-full bg-white shadow-glass">
             <SidebarContent />
           </aside>
         </div>
       )}
 
       <div className="flex-1 flex flex-col min-w-0 bg-white">
-        <header className="sticky top-0 z-30 h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1 max-w-md">
+        <header className="sticky top-0 z-30 h-16 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 flex-1 max-w-lg">
             <button
               onClick={() => setMobileOpen(true)}
               className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50"
             >
               <Menu className="w-4 h-4" />
             </button>
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <div className="relative flex-1 group">
+              <Search className="w-4 h-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Search tasks, codes, or tags..."
-                className="w-full h-9 pl-9 pr-4 rounded-xl bg-slate-50/80 border border-slate-200/80 text-xs text-slate-900 placeholder:text-slate-400 transition-all focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                className="w-full h-9 pl-9 pr-14 rounded-xl bg-slate-50/80 border border-slate-200/80 text-xs text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
               />
+              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-[10px] font-semibold text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2">
+                ⌘K
+              </kbd>
             </div>
           </div>
 
