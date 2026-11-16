@@ -85,12 +85,12 @@ export function SettingsView() {
       <Card>
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-            {API_MODE === 'mock' ? <Database className="w-5 h-5" /> : <Server className="w-5 h-5" />}
+            <Server className="w-5 h-5 text-indigo-600" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">API Mode: <span className="uppercase text-indigo-600">{API_MODE}</span></h3>
+            <h3 className="text-sm font-semibold text-slate-900">API Mode: <span className="uppercase text-indigo-600">{API_MODE} (MySQL saas_db)</span></h3>
             <p className="text-xs text-slate-500 mt-0.5 max-w-lg leading-relaxed">
-              {API_MODE === 'mock' ? 'The demo currently uses browser LocalStorage. This is for local testing only.' : 'The frontend is configured to connect to the Laravel API.'}
+              The frontend is directly connected to the Laravel REST API and MySQL database <code>saas_db</code>.
             </p>
           </div>
         </div>
