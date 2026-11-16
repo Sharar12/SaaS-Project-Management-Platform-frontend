@@ -24,7 +24,7 @@ const PRIORITY_TONE: Record<TaskPriority, BadgeTone> = {
 
 export function KanbanBoardView() {
   const searchParams = useSearchParams();
-  const { projects, tasks, members, openTaskDrawer, openCreateTaskModal, updateTask } =
+  const { projects, tasks, members, openTaskDrawer, openCreateTaskModal, updateTask, canEditWork } =
     useWorkspace();
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
@@ -42,7 +42,7 @@ export function KanbanBoardView() {
       : tasks.filter((t) => t.projectId === selectedProjectId);
 
   const handleDrop = async (targetStatus: TaskStatus) => {
-    if (!draggedTaskId) return;
+    if (!canEditWork || !draggedTaskId) return;
     const task = tasks.find((t) => t.id === draggedTaskId);
     setDraggedTaskId(null);
     setDragOverCol(null);
@@ -79,14 +79,16 @@ export function KanbanBoardView() {
               ))}
             </Select>
           </div>
-          <Button
-            leftIcon={<Plus className="w-4 h-4" />}
-            onClick={() =>
-              openCreateTaskModal(selectedProjectId === 'all' ? undefined : selectedProjectId)
-            }
-          >
-            Add Task
-          </Button>
+          {canEditWork && (
+            <Button
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() =>
+                openCreateTaskModal(selectedProjectId === 'all' ? undefined : selectedProjectId)
+              }
+            >
+              Add Task
+            </Button>
+          )}
         </div>
       </div>
 
@@ -100,6 +102,7 @@ export function KanbanBoardView() {
             <div
               key={col.id}
               onDragOver={(e) => {
+                if (!canEditWork) return;
                 e.preventDefault();
                 setDragOverCol(col.id);
               }}
@@ -127,8 +130,8 @@ export function KanbanBoardView() {
                   return (
                     <div
                       key={task.id}
-                      draggable
-                      onDragStart={() => setDraggedTaskId(task.id)}
+                      draggable={canEditWork}
+                      onDragStart={() => canEditWork && setDraggedTaskId(task.id)}
                       onDragEnd={() => {
                         setDraggedTaskId(null);
                         setDragOverCol(null);

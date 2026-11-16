@@ -23,6 +23,7 @@ export function DashboardView() {
     activities,
     openTaskDrawer,
     openCreateTaskModal,
+    canEditWork,
   } = useWorkspace();
 
   const totalTasks = tasks.length;
@@ -48,9 +49,11 @@ export function DashboardView() {
               Open Board
             </Button>
           </Link>
-          <Button leftIcon={<Plus className="w-4 h-4" />} onClick={() => openCreateTaskModal()}>
-            Add Deliverable
-          </Button>
+          {canEditWork && (
+            <Button leftIcon={<Plus className="w-4 h-4" />} onClick={() => openCreateTaskModal()}>
+              Add Deliverable
+            </Button>
+          )}
         </div>
       </div>
 

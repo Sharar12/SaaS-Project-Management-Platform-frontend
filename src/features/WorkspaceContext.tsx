@@ -1,27 +1,36 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   ActivityLog,
+  AuthUser,
+  CreateMemberInput,
   CreateProjectInput,
   CreateTaskInput,
-  InviteMemberInput,
+  CreateWorkspaceInput,
   MemberRole,
   Project,
   Task,
   TeamMember,
+  UpdateProjectInput,
   Workspace,
 } from '@/contracts';
 import { apiService } from '@/services/apiService';
-import { AppShell, ToastContainer, ToastItem } from '@/ui';
-import { CreateProjectModal, CreateTaskModal } from './CreateModals';
+import { AppShell, Button, Card, Input, ToastContainer, ToastItem } from '@/ui';
+import { CreateCompanyModal, CreateProjectModal, CreateTaskModal } from './CreateModals';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
+import { Building2 } from 'lucide-react';
 
 interface WorkspaceContextValue {
   loading: boolean;
+  user: AuthUser | null;
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
-  setActiveWorkspaceId: (id: string) => void;
+  currentRole: MemberRole | null;
+  canManageCompany: boolean;
+  canEditWork: boolean;
+  setActiveWorkspaceId: (id: string) => Promise<void>;
   projects: Project[];
   tasks: Task[];
   members: TeamMember[];
@@ -33,183 +42,289 @@ interface WorkspaceContextValue {
   closeTaskDrawer: () => void;
   openCreateTaskModal: (defaultProjectId?: string) => void;
   openCreateProjectModal: () => void;
+  openCreateCompanyModal: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  createCompany: (input: CreateWorkspaceInput) => Promise<void>;
   createProject: (input: Omit<CreateProjectInput, 'workspaceId'>) => Promise<void>;
+  updateProject: (projectId: string, patch: UpdateProjectInput) => Promise<void>;
+  deleteProject: (projectId: string) => Promise<void>;
   createTask: (input: Omit<CreateTaskInput, 'workspaceId'>) => Promise<void>;
   updateTask: (taskId: string, patch: Partial<Task>, activityNote?: string) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
   addComment: (taskId: string, content: string) => Promise<void>;
-  inviteMember: (input: Omit<InviteMemberInput, 'workspaceId'>) => Promise<void>;
+  createMember: (input: Omit<CreateMemberInput, 'workspaceId'>) => Promise<void>;
   updateMemberRole: (memberId: string, role: MemberRole) => Promise<void>;
+  removeMember: (memberId: string) => Promise<void>;
   updateWorkspace: (
     patch: Partial<Pick<Workspace, 'name' | 'industry' | 'plan' | 'accentColor'>>
   ) => Promise<void>;
-  resetDemo: () => Promise<void>;
-  notify: (message: string, type?: 'success' | 'info') => void;
+  notify: (message: string, type?: 'success' | 'info' | 'error') => void;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(undefined);
+const AUTH_ROUTES = ['/login', '/register'];
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const isAuthPage = AUTH_ROUTES.includes(pathname);
+
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>('ws-1');
-  const [allProjects, setAllProjects] = useState<Project[]>([]);
-  const [allTasks, setAllTasks] = useState<Task[]>([]);
-  const [allMembers, setAllMembers] = useState<TeamMember[]>([]);
-  const [allActivities, setAllActivities] = useState<ActivityLog[]>([]);
+  const [activeWorkspaceId, setActiveWsIdState] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [rawTasks, setRawTasks] = useState<Task[]>([]);
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [defaultTaskProjectId, setDefaultTaskProjectId] = useState<string | undefined>();
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
+  const [createCompanyOpen, setCreateCompanyOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const notify = useCallback((message: string, type: 'success' | 'info' = 'success') => {
-    const id = `${Date.now()}-${Math.random()}`;
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3200);
-  }, []);
+  // Onboarding state when a new user has 0 companies
+  const [onboardName, setOnboardName] = useState('');
+  const [onboardIndustry, setOnboardIndustry] = useState('Software & Technology');
+  const [onboardSaving, setOnboardSaving] = useState(false);
 
-  const loadBundle = useCallback(async () => {
+  const notify = useCallback(
+    (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+      const id = `${Date.now()}-${Math.random()}`;
+      setToasts((prev) => [...prev, { id, message, type }]);
+      setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3800);
+    },
+    []
+  );
+
+  const runSafe = async <T,>(fn: () => Promise<T>): Promise<T> => {
+    try {
+      return await fn();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Action failed';
+      notify(msg, 'error');
+      throw err;
+    }
+  };
+
+  const loadBundle = useCallback(async (wsId?: string) => {
     setLoading(true);
     try {
-      const bundle = await apiService.getBundle();
+      const bundle = await apiService.getBundle(wsId);
+      setUser(bundle.user);
       setWorkspaces(bundle.workspaces);
-      setAllProjects(bundle.projects);
-      setAllTasks(bundle.tasks);
-      setAllMembers(bundle.members);
-      setAllActivities(bundle.activities);
-      if (bundle.workspaces.length > 0) {
-        setActiveWorkspaceId((prev) =>
-          bundle.workspaces.some((w) => w.id === prev) ? prev : bundle.workspaces[0].id
-        );
+      setActiveWsIdState(bundle.activeWorkspaceId);
+      setProjects(bundle.projects);
+      setRawTasks(bundle.tasks);
+      setMembers(bundle.members);
+      setActivities(bundle.activities);
+    } catch {
+      setUser(null);
+      if (!AUTH_ROUTES.includes(window.location.pathname)) {
+        router.replace('/login');
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     loadBundle();
   }, [loadBundle]);
+
+  const setActiveWorkspaceId = async (id: string) => {
+    await loadBundle(id);
+  };
+
+  const login = async (email: string, password: string) => {
+    await runSafe(async () => {
+      await apiService.login(email, password);
+      await loadBundle();
+      router.replace('/');
+    });
+  };
+
+  const register = async (name: string, email: string, password: string) => {
+    await runSafe(async () => {
+      await apiService.register(name, email, password);
+      await loadBundle();
+      router.replace('/');
+    });
+  };
+
+  const logout = async () => {
+    await apiService.logout();
+    setUser(null);
+    setWorkspaces([]);
+    router.replace('/login');
+  };
 
   const activeWorkspace = useMemo(
     () => workspaces.find((w) => w.id === activeWorkspaceId) ?? null,
     [workspaces, activeWorkspaceId]
   );
 
-  const projects = useMemo(
-    () => allProjects.filter((p) => p.workspaceId === activeWorkspaceId),
-    [allProjects, activeWorkspaceId]
-  );
+  const currentRole: MemberRole | null = useMemo(() => {
+    if (activeWorkspace?.myRole) return activeWorkspace.myRole;
+    return members.find((m) => m.userId === user?.id)?.role ?? null;
+  }, [activeWorkspace, members, user]);
 
-  const members = useMemo(
-    () => allMembers.filter((m) => m.workspaceId === activeWorkspaceId),
-    [allMembers, activeWorkspaceId]
-  );
+  const canManageCompany = currentRole === 'owner' || currentRole === 'admin';
+  const canEditWork = currentRole !== null && currentRole !== 'viewer';
 
   const tasks = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return allTasks
-      .filter((t) => t.workspaceId === activeWorkspaceId)
-      .filter((t) => {
-        if (!q) return true;
-        return (
-          t.title.toLowerCase().includes(q) ||
-          t.code.toLowerCase().includes(q) ||
-          t.tags.some((tag) => tag.toLowerCase().includes(q))
-        );
-      });
-  }, [allTasks, activeWorkspaceId, searchQuery]);
-
-  const activities = useMemo(
-    () => allActivities.filter((a) => a.workspaceId === activeWorkspaceId),
-    [allActivities, activeWorkspaceId]
-  );
+    if (!q) return rawTasks;
+    return rawTasks.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        t.code.toLowerCase().includes(q) ||
+        t.tags.some((tag) => tag.toLowerCase().includes(q))
+    );
+  }, [rawTasks, searchQuery]);
 
   const selectedTask = useMemo(
-    () =>
-      allTasks.find((t) => t.id === selectedTaskId && t.workspaceId === activeWorkspaceId) ?? null,
-    [allTasks, selectedTaskId, activeWorkspaceId]
+    () => rawTasks.find((t) => t.id === selectedTaskId) ?? null,
+    [rawTasks, selectedTaskId]
   );
 
-  const currentActorId = members[0]?.id ?? 'mem-1';
+  const createCompany = async (input: CreateWorkspaceInput) => {
+    await runSafe(async () => {
+      const ws = await apiService.createWorkspace(input);
+      await loadBundle(ws.id);
+      notify(`Company "${ws.name}" created. You are now Owner (Admin).`);
+    });
+  };
 
   const createProject = async (input: Omit<CreateProjectInput, 'workspaceId'>) => {
-    const created = await apiService.createProject({ ...input, workspaceId: activeWorkspaceId });
-    setAllProjects((prev) => [created, ...prev]);
-    notify(`Project "${created.name}" created`);
+    if (!activeWorkspaceId) return;
+    await runSafe(async () => {
+      const created = await apiService.createProject({ ...input, workspaceId: activeWorkspaceId });
+      setProjects((prev) => [created, ...prev]);
+      notify(`Project "${created.name}" created`);
+    });
+  };
+
+  const updateProject = async (projectId: string, patch: UpdateProjectInput) => {
+    await runSafe(async () => {
+      const updated = await apiService.updateProject(projectId, patch);
+      setProjects((prev) => prev.map((p) => (p.id === projectId ? updated : p)));
+      notify('Project updated');
+    });
+  };
+
+  const deleteProject = async (projectId: string) => {
+    await runSafe(async () => {
+      await apiService.deleteProject(projectId);
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      setRawTasks((prev) => prev.filter((t) => t.projectId !== projectId));
+      notify('Project deleted', 'info');
+    });
   };
 
   const createTask = async (input: Omit<CreateTaskInput, 'workspaceId'>) => {
-    const created = await apiService.createTask(
-      { ...input, workspaceId: activeWorkspaceId },
-      currentActorId
-    );
-    setAllTasks((prev) => [created, ...prev]);
-    notify(`Task ${created.code} added`);
+    if (!activeWorkspaceId) return;
+    await runSafe(async () => {
+      const created = await apiService.createTask({ ...input, workspaceId: activeWorkspaceId });
+      setRawTasks((prev) => [created, ...prev]);
+      notify(`Task ${created.code} created`);
+    });
   };
 
   const updateTask = async (taskId: string, patch: Partial<Task>, activityNote?: string) => {
-    const updated = await apiService.updateTask(taskId, patch, currentActorId, activityNote);
-    setAllTasks((prev) => prev.map((t) => (t.id === taskId ? updated : t)));
-    if (activityNote) {
-      notify(`Updated ${updated.code}`);
-    }
+    await runSafe(async () => {
+      const updated = await apiService.updateTask(taskId, patch, activityNote);
+      setRawTasks((prev) => prev.map((t) => (t.id === taskId ? updated : t)));
+      if (activityNote) notify(`Updated ${updated.code}`);
+    });
   };
 
   const deleteTask = async (taskId: string) => {
-    await apiService.deleteTask(taskId);
-    setAllTasks((prev) => prev.filter((t) => t.id !== taskId));
-    setSelectedTaskId(null);
-    notify('Task deleted', 'info');
+    await runSafe(async () => {
+      await apiService.deleteTask(taskId);
+      setRawTasks((prev) => prev.filter((t) => t.id !== taskId));
+      setSelectedTaskId(null);
+      notify('Task deleted', 'info');
+    });
   };
 
   const addComment = async (taskId: string, content: string) => {
-    const updated = await apiService.addTaskComment(taskId, currentActorId, content);
-    setAllTasks((prev) => prev.map((t) => (t.id === taskId ? updated : t)));
-    notify('Comment posted');
+    await runSafe(async () => {
+      const updated = await apiService.addTaskComment(taskId, content);
+      setRawTasks((prev) => prev.map((t) => (t.id === taskId ? updated : t)));
+      notify('Comment added');
+    });
   };
 
-  const inviteMember = async (input: Omit<InviteMemberInput, 'workspaceId'>) => {
-    const member = await apiService.inviteMember({ ...input, workspaceId: activeWorkspaceId });
-    setAllMembers((prev) => [...prev, member]);
-    notify(`Invited ${member.name} to workspace`);
+  const createMember = async (input: Omit<CreateMemberInput, 'workspaceId'>) => {
+    if (!activeWorkspaceId) return;
+    await runSafe(async () => {
+      const member = await apiService.createMember({ ...input, workspaceId: activeWorkspaceId });
+      setMembers((prev) => [...prev, member]);
+      notify(`Member "${member.name}" added as ${member.role}`);
+    });
   };
 
   const updateMemberRole = async (memberId: string, role: MemberRole) => {
-    const updated = await apiService.updateMemberRole(memberId, role);
-    setAllMembers((prev) => prev.map((m) => (m.id === memberId ? updated : m)));
-    notify(`Updated role for ${updated.name}`);
+    if (!activeWorkspaceId) return;
+    await runSafe(async () => {
+      const updated = await apiService.updateMemberRole(activeWorkspaceId, memberId, role);
+      setMembers((prev) => prev.map((m) => (m.id === memberId ? updated : m)));
+      notify(`Updated ${updated.name} to ${role}`);
+    });
+  };
+
+  const removeMember = async (memberId: string) => {
+    if (!activeWorkspaceId) return;
+    await runSafe(async () => {
+      await apiService.removeMember(activeWorkspaceId, memberId);
+      setMembers((prev) => prev.filter((m) => m.id !== memberId));
+      notify('Member removed', 'info');
+    });
   };
 
   const updateWorkspace = async (
     patch: Partial<Pick<Workspace, 'name' | 'industry' | 'plan' | 'accentColor'>>
   ) => {
-    const updated = await apiService.updateWorkspace(activeWorkspaceId, patch);
-    setWorkspaces((prev) => prev.map((w) => (w.id === activeWorkspaceId ? updated : w)));
-    notify('Workspace settings saved');
+    if (!activeWorkspaceId) return;
+    await runSafe(async () => {
+      const updated = await apiService.updateWorkspace(activeWorkspaceId, patch);
+      setWorkspaces((prev) => prev.map((w) => (w.id === activeWorkspaceId ? updated : w)));
+      notify('Company settings saved');
+    });
   };
 
-  const resetDemo = async () => {
-    const bundle = await apiService.resetDemoData();
-    setWorkspaces(bundle.workspaces);
-    setAllProjects(bundle.projects);
-    setAllTasks(bundle.tasks);
-    setAllMembers(bundle.members);
-    setAllActivities(bundle.activities);
-    notify('Database restored to clean seed state', 'info');
+  const handleOnboardCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!onboardName.trim()) return;
+    setOnboardSaving(true);
+    try {
+      await createCompany({
+        name: onboardName.trim(),
+        industry: onboardIndustry.trim(),
+        accentColor: '#4F46E5',
+      });
+      setOnboardName('');
+    } finally {
+      setOnboardSaving(false);
+    }
   };
 
   return (
     <WorkspaceContext.Provider
       value={{
         loading,
+        user,
         workspaces,
         activeWorkspace,
+        currentRole,
+        canManageCompany,
+        canEditWork,
         setActiveWorkspaceId,
         projects,
         tasks,
@@ -225,45 +340,90 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
           setCreateTaskOpen(true);
         },
         openCreateProjectModal: () => setCreateProjectOpen(true),
+        openCreateCompanyModal: () => setCreateCompanyOpen(true),
+        login,
+        register,
+        logout,
+        createCompany,
         createProject,
+        updateProject,
+        deleteProject,
         createTask,
         updateTask,
         deleteTask,
         addComment,
-        inviteMember,
+        createMember,
         updateMemberRole,
+        removeMember,
         updateWorkspace,
-        resetDemo,
         notify,
       }}
     >
-      <AppShell
-        workspaces={workspaces}
-        activeWorkspace={activeWorkspace}
-        onSelectWorkspace={setActiveWorkspaceId}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onNewTaskClick={() => {
-          setDefaultTaskProjectId(projects[0]?.id);
-          setCreateTaskOpen(true);
-        }}
-        onNewProjectClick={() => setCreateProjectOpen(true)}
-        unreadActivityCount={activities.length}
-      >
-        {loading ? (
-          <div className="space-y-4 animate-pulse">
-            <div className="h-8 w-56 bg-slate-100 rounded-xl" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-28 bg-slate-100 rounded-2xl" />
-              ))}
+      {isAuthPage ? (
+        children
+      ) : !user && !loading ? null : (
+        <AppShell
+          currentUser={user}
+          workspaces={workspaces}
+          activeWorkspace={activeWorkspace}
+          onSelectWorkspace={setActiveWorkspaceId}
+          onCreateCompanyClick={() => setCreateCompanyOpen(true)}
+          onLogoutClick={logout}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onNewTaskClick={() => {
+            setDefaultTaskProjectId(projects[0]?.id);
+            setCreateTaskOpen(true);
+          }}
+          canEditWork={canEditWork}
+        >
+          {loading ? (
+            <div className="space-y-4 animate-pulse">
+              <div className="h-8 w-56 bg-slate-100 rounded-xl" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-28 bg-slate-100 rounded-2xl" />
+                ))}
+              </div>
             </div>
-            <div className="h-72 bg-slate-100 rounded-2xl" />
-          </div>
-        ) : (
-          children
-        )}
-      </AppShell>
+          ) : !activeWorkspace ? (
+            /* Onboarding View for New Accounts with 0 Companies */
+            <div className="max-w-lg mx-auto py-12 animate-fade-in">
+              <Card padding="lg">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <h1 className="text-xl font-bold text-slate-900">
+                  Welcome, {user?.name}! Create your Company
+                </h1>
+                <p className="text-sm text-slate-500 mt-1.5">
+                  Start your isolated company workspace. You will automatically become the{' '}
+                  <strong>Owner (Admin)</strong> and can add team members right away.
+                </p>
+                <form onSubmit={handleOnboardCreate} className="space-y-4 mt-6">
+                  <Input
+                    label="Company / Group Name"
+                    placeholder="e.g., Acme Software Ltd."
+                    value={onboardName}
+                    onChange={(e) => setOnboardName(e.target.value)}
+                    required
+                  />
+                  <Input
+                    label="Industry"
+                    value={onboardIndustry}
+                    onChange={(e) => setOnboardIndustry(e.target.value)}
+                  />
+                  <Button type="submit" className="w-full" size="lg" loading={onboardSaving}>
+                    Create Company & Enter Workspace
+                  </Button>
+                </form>
+              </Card>
+            </div>
+          ) : (
+            children
+          )}
+        </AppShell>
+      )}
 
       <TaskDetailDrawer
         task={selectedTask}
@@ -273,6 +433,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         onUpdateTask={updateTask}
         onDeleteTask={deleteTask}
         onAddComment={addComment}
+        readOnly={!canEditWork}
       />
 
       <CreateTaskModal
@@ -289,6 +450,12 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         onClose={() => setCreateProjectOpen(false)}
         members={members}
         onSubmit={createProject}
+      />
+
+      <CreateCompanyModal
+        open={createCompanyOpen}
+        onClose={() => setCreateCompanyOpen(false)}
+        onSubmit={createCompany}
       />
 
       <ToastContainer

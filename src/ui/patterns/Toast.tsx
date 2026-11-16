@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle2, Info, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
 
 export interface ToastItem {
   id: string;
   message: string;
-  type?: 'success' | 'info';
+  type?: 'success' | 'info' | 'error';
 }
 
 interface ToastContainerProps {
@@ -22,9 +22,13 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-lg animate-slide-up"
+          className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl bg-white border shadow-lg animate-slide-up ${
+            toast.type === 'error' ? 'border-rose-200' : 'border-slate-200'
+          }`}
         >
-          {toast.type === 'info' ? (
+          {toast.type === 'error' ? (
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          ) : toast.type === 'info' ? (
             <Info className="w-4 h-4 text-sky-600 shrink-0" />
           ) : (
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />

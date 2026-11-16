@@ -8,7 +8,7 @@ import { Avatar, Badge, Button, Card, EmptyState, ProgressBar, Tabs } from '@/ui
 import { useWorkspace } from './WorkspaceContext';
 
 export function ProjectsView() {
-  const { projects, tasks, members, openCreateProjectModal, openCreateTaskModal } = useWorkspace();
+  const { projects, tasks, members, openCreateProjectModal, openCreateTaskModal, canManageCompany, canEditWork, deleteProject } = useWorkspace();
   const [filter, setFilter] = useState<'all' | ProjectStatus>('all');
 
   const filtered =
@@ -23,9 +23,11 @@ export function ProjectsView() {
             Universal project containers reusable across engineering, design, or operations.
           </p>
         </div>
-        <Button leftIcon={<Plus className="w-4 h-4" />} onClick={openCreateProjectModal}>
-          New Project
-        </Button>
+        {canManageCompany && (
+          <Button leftIcon={<Plus className="w-4 h-4" />} onClick={openCreateProjectModal}>
+            New Project
+          </Button>
+        )}
       </div>
 
       <Tabs
@@ -133,13 +135,20 @@ export function ProjectsView() {
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => openCreateTaskModal(project.id)}
-                      >
-                        + Task
-                      </Button>
+                      {canEditWork && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => openCreateTaskModal(project.id)}
+                        >
+                          + Task
+                        </Button>
+                      )}
+                      {canManageCompany && (
+                        <Button size="sm" variant="danger" onClick={() => deleteProject(project.id)}>
+                          Delete
+                        </Button>
+                      )}
                       <Link href={`/board?project=${project.id}`}>
                         <Button
                           size="sm"

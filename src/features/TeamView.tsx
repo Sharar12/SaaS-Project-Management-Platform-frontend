@@ -1,35 +1,47 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mail, Shield, UserPlus } from 'lucide-react';
+import { Mail, Shield, Trash2, UserPlus } from 'lucide-react';
 import { MemberRole } from '@/contracts';
 import { Avatar, Badge, Button, Card, Input, Modal, Select } from '@/ui';
 import { useWorkspace } from './WorkspaceContext';
 
 export function TeamView() {
-  const { members, tasks, inviteMember, updateMemberRole } = useWorkspace();
-  const [inviteOpen, setInviteOpen] = useState(false);
+  const {
+    user,
+    members,
+    tasks,
+    canManageCompany,
+    createMember,
+    updateMemberRole,
+    removeMember,
+  } = useWorkspace();
+
+  const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('password123');
   const [title, setTitle] = useState('');
   const [role, setRole] = useState<MemberRole>('member');
   const [submitting, setSubmitting] = useState(false);
 
-  const handleInvite = async (e: React.FormEvent) => {
+  const handleCreateMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
     setSubmitting(true);
     try {
-      await inviteMember({
+      await createMember({
         name: name.trim(),
         email: email.trim(),
+        password: password.trim() || 'password123',
         role,
-        title: title.trim() || 'Product Contributor',
+        title: title.trim() || 'Team Member',
       });
       setName('');
       setEmail('');
+      setPassword('password123');
       setTitle('');
-      setInviteOpen(false);
+      setCreateOpen(false);
     } finally {
       setSubmitting(false);
     }
@@ -39,14 +51,18 @@ export function TeamView() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Team & Permissions</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Company Team & Roles
+          </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Manage workspace seats, role-based access, and active workload distribution.
+            Owners and Admins can create member accounts, assign roles, and manage access.
           </p>
         </div>
-        <Button leftIcon={<UserPlus className="w-4 h-4" />} onClick={() => setInviteOpen(true)}>
-          Invite Member
-        </Button>
+        {canManageCompany && (
+          <Button leftIcon={<UserPlus className="w-4 h-4" />} onClick={() => setCreateOpen(true)}>
+            Create Member
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -54,6 +70,7 @@ export function TeamView() {
           const assignedCount = tasks.filter(
             (t) => t.assigneeId === member.id && t.status !== 'done'
           ).length;
+          const isSelf = member.userId === user?.id;
 
           return (
             <Card key={member.id} interactive>
@@ -66,7 +83,9 @@ export function TeamView() {
                     status={member.status}
                   />
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-900">{member.name}</h3>
+                    <h3 className="text-sm font-semibold text-slate-900">
+                      {member.name} {isSelf && <span className="text-xs text-indigo-600">(You)</span>}
+                    </h3>
                     <p className="text-xs text-slate-500">{member.title}</p>
                     <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-1">
                       <Mail className="w-3 h-3" />
@@ -83,18 +102,34 @@ export function TeamView() {
                 <span className="text-xs text-slate-500">
                   <strong className="text-slate-800">{assignedCount}</strong> open tasks
                 </span>
-                <div className="flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-slate-400" />
-                  <select
-                    value={member.role}
-                    onChange={(e) => updateMemberRole(member.id, e.target.value as MemberRole)}
-                    className="h-8 px-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="owner">Owner</option>
-                    <option value="admin">Admin</option>
-                    <option value="member">Member</option>
-                    <option value="viewer">Viewer</option>
-                  </select>
+
+                <div className="flex items-center gap-2">
+                  {canManageCompany && !isSelf ? (
+                    <>
+                      <div className="flex items-center gap-1">
+                        <Shield className="w-3.5 h-3.5 text-slate-400" />
+                        <select
+                          value={member.role}
+                          onChange={(e) => updateMemberRole(member.id, e.target.value as MemberRole)}
+                          className="h-8 px-2 rounded-lg bg-white border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-indigo-500"
+                        >
+                          <option value="owner">Owner</option>
+                          <option value="admin">Admin</option>
+                          <option value="member">Member</option>
+                          <option value="viewer">Viewer</option>
+                        </select>
+                      </div>
+                      <button
+                        onClick={() => removeMember(member.id)}
+                        title="Remove from company"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  ) : (
+                    <span className="text-[11px] text-slate-400 uppercase">{member.role}</span>
+                  )}
                 </div>
               </div>
             </Card>
@@ -103,25 +138,33 @@ export function TeamView() {
       </div>
 
       <Modal
-        open={inviteOpen}
-        onClose={() => setInviteOpen(false)}
-        title="Invite Team Member"
-        subtitle="Add a collaborator to this workspace."
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Create Company Member"
+        subtitle="Creates a user account (if new) and adds them to this company."
       >
-        <form onSubmit={handleInvite} className="space-y-4">
+        <form onSubmit={handleCreateMember} className="space-y-4">
           <Input
             label="Full Name"
-            placeholder="e.g., Nadia Karim"
+            placeholder="e.g., Rafiq Hasan"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
           <Input
-            label="Work Email"
+            label="Email Address"
             type="email"
-            placeholder="nadia@company.com"
+            placeholder="rafiq@company.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <Input
+            label="Initial Password (for new accounts)"
+            type="text"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            minLength={6}
             required
           />
           <div className="grid grid-cols-2 gap-3">
@@ -132,7 +175,7 @@ export function TeamView() {
               onChange={(e) => setTitle(e.target.value)}
             />
             <Select
-              label="Workspace Role"
+              label="Company Role"
               value={role}
               onChange={(e) => setRole(e.target.value as MemberRole)}
             >
@@ -142,11 +185,11 @@ export function TeamView() {
             </Select>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="secondary" onClick={() => setInviteOpen(false)}>
+            <Button type="button" variant="secondary" onClick={() => setCreateOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" loading={submitting}>
-              Send Invite
+              Create Member
             </Button>
           </div>
         </form>

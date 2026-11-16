@@ -13,6 +13,7 @@ interface TaskDetailDrawerProps {
   onUpdateTask: (taskId: string, patch: Partial<Task>, activityNote?: string) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
   onAddComment: (taskId: string, content: string) => Promise<void>;
+  readOnly?: boolean;
 }
 
 export function TaskDetailDrawer({
@@ -23,6 +24,7 @@ export function TaskDetailDrawer({
   onUpdateTask,
   onDeleteTask,
   onAddComment,
+  readOnly = false,
 }: TaskDetailDrawerProps) {
   const [commentText, setCommentText] = useState('');
   const [newSubtask, setNewSubtask] = useState('');
@@ -85,6 +87,7 @@ export function TaskDetailDrawer({
         <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50/70 border border-slate-200/70">
           <Select
             label="Status"
+            disabled={readOnly}
             value={task.status}
             onChange={(e) =>
               onUpdateTask(
@@ -103,6 +106,7 @@ export function TaskDetailDrawer({
 
           <Select
             label="Priority"
+            disabled={readOnly}
             value={task.priority}
             onChange={(e) =>
               onUpdateTask(
@@ -120,6 +124,7 @@ export function TaskDetailDrawer({
 
           <Select
             label="Assignee"
+            disabled={readOnly}
             value={task.assigneeId ?? ''}
             onChange={(e) =>
               onUpdateTask(task.id, { assigneeId: e.target.value || null }, 'reassigned task')
@@ -139,6 +144,7 @@ export function TaskDetailDrawer({
               <Calendar className="w-4 h-4 text-slate-400" />
               <input
                 type="date"
+                disabled={readOnly}
                 value={task.dueDate}
                 onChange={(e) => onUpdateTask(task.id, { dueDate: e.target.value })}
                 className="bg-transparent w-full text-sm focus:outline-none"
@@ -164,6 +170,7 @@ export function TaskDetailDrawer({
                 <input
                   type="checkbox"
                   checked={st.completed}
+                  disabled={readOnly}
                   onChange={() => toggleSubtask(st.id)}
                   className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                 />
@@ -177,6 +184,7 @@ export function TaskDetailDrawer({
               </label>
             ))}
           </div>
+          {!readOnly && (
           <form onSubmit={handleAddSubtask} className="flex gap-2 mt-2.5">
             <input
               type="text"
@@ -189,6 +197,7 @@ export function TaskDetailDrawer({
               Add
             </Button>
           </form>
+          )}
         </div>
 
         {/* Comments */}
@@ -223,6 +232,7 @@ export function TaskDetailDrawer({
               );
             })}
           </div>
+          {!readOnly && (
           <form onSubmit={handlePostComment} className="flex gap-2">
             <input
               type="text"
@@ -235,21 +245,22 @@ export function TaskDetailDrawer({
               Post
             </Button>
           </form>
+          )}
         </div>
 
         {/* Danger Zone */}
         <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
-          <span className="text-xs text-slate-400">
-            Estimated: {task.estimatedHours}h
-          </span>
-          <Button
-            variant="danger"
-            size="sm"
-            leftIcon={<Trash2 className="w-3.5 h-3.5" />}
-            onClick={() => onDeleteTask(task.id)}
-          >
-            Delete Task
-          </Button>
+          <span className="text-xs text-slate-400">Estimated: {task.estimatedHours}h</span>
+          {!readOnly && (
+            <Button
+              variant="danger"
+              size="sm"
+              leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+              onClick={() => onDeleteTask(task.id)}
+            >
+              Delete Task
+            </Button>
+          )}
         </div>
       </div>
     </Drawer>

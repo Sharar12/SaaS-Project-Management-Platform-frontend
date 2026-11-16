@@ -14,7 +14,7 @@ const PRIORITY_TONE: Record<TaskPriority, BadgeTone> = {
 };
 
 export function TaskListView() {
-  const { tasks, projects, members, openTaskDrawer, openCreateTaskModal, updateTask } =
+  const { tasks, projects, members, openTaskDrawer, openCreateTaskModal, updateTask, canEditWork } =
     useWorkspace();
   const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
 
@@ -30,9 +30,11 @@ export function TaskListView() {
             Structured table view with instant inline status switching.
           </p>
         </div>
-        <Button leftIcon={<Plus className="w-4 h-4" />} onClick={() => openCreateTaskModal()}>
-          New Task
-        </Button>
+        {canEditWork && (
+          <Button leftIcon={<Plus className="w-4 h-4" />} onClick={() => openCreateTaskModal()}>
+            New Task
+          </Button>
+        )}
       </div>
 
       <Tabs
@@ -101,23 +103,29 @@ export function TaskListView() {
                       className="py-3.5 px-4 whitespace-nowrap"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <select
-                        value={task.status}
-                        onChange={(e) =>
-                          updateTask(
-                            task.id,
-                            { status: e.target.value as TaskStatus },
-                            `updated status to ${e.target.value.replace('_', ' ')}`
-                          )
-                        }
-                        className="h-8 px-2.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="backlog">Backlog</option>
-                        <option value="todo">To Do</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="in_review">In Review</option>
-                        <option value="done">Done</option>
-                      </select>
+                      {canEditWork ? (
+                        <select
+                          value={task.status}
+                          onChange={(e) =>
+                            updateTask(
+                              task.id,
+                              { status: e.target.value as TaskStatus },
+                              `updated status to ${e.target.value.replace('_', ' ')}`
+                            )
+                          }
+                          className="h-8 px-2.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 focus:outline-none focus:border-indigo-500"
+                        >
+                          <option value="backlog">Backlog</option>
+                          <option value="todo">To Do</option>
+                          <option value="in_progress">In Progress</option>
+                          <option value="in_review">In Review</option>
+                          <option value="done">Done</option>
+                        </select>
+                      ) : (
+                        <Badge tone={task.status === 'done' ? 'emerald' : 'neutral'}>
+                          {task.status.replace('_', ' ')}
+                        </Badge>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <Badge tone={PRIORITY_TONE[task.priority]}>{task.priority}</Badge>

@@ -300,3 +300,80 @@ export function CreateProjectModal({
     </Modal>
   );
 }
+
+interface CreateCompanyModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (input: { name: string; industry: string; accentColor: string }) => Promise<void>;
+}
+
+const COMPANY_COLORS = ['#4F46E5', '#0EA5E9', '#10B981', '#F59E0B', '#EC4899'];
+
+export function CreateCompanyModal({ open, onClose, onSubmit }: CreateCompanyModalProps) {
+  const [name, setName] = useState('');
+  const [industry, setIndustry] = useState('SaaS & Technology');
+  const [accentColor, setAccentColor] = useState(COMPANY_COLORS[0]);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setSubmitting(true);
+    try {
+      await onSubmit({ name: name.trim(), industry: industry.trim(), accentColor });
+      setName('');
+      onClose();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Create a Company / Group"
+      subtitle="You will automatically become the Owner (Admin) and can add team members."
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="Company or Group Name"
+          placeholder="e.g., Dhaka Tech Labs"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <Input
+          label="Industry"
+          placeholder="e.g., Software Agency, E-Commerce"
+          value={industry}
+          onChange={(e) => setIndustry(e.target.value)}
+        />
+        <div>
+          <span className="block text-xs font-medium text-slate-700 mb-2">Brand Accent</span>
+          <div className="flex gap-2.5">
+            {COMPANY_COLORS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setAccentColor(c)}
+                className={`w-7 h-7 rounded-full transition-transform ${
+                  accentColor === c ? 'ring-2 ring-offset-2 ring-slate-900 scale-110' : 'hover:scale-105'
+                }`}
+                style={{ backgroundColor: c }}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" loading={submitting}>
+            Create Company
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}

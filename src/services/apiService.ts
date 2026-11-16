@@ -1,124 +1,71 @@
 import {
+  AuthResponse,
+  AuthUser,
+  CreateMemberInput,
   CreateProjectInput,
   CreateTaskInput,
-  InviteMemberInput,
+  CreateWorkspaceInput,
   MemberRole,
   Project,
   Task,
   TeamMember,
+  UpdateProjectInput,
   Workspace,
   WorkspaceBundle,
 } from '@/contracts';
+import { mockApiClient } from '@/mock-backend/mockApiClient';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || 'http://127.0.0.1:8000/api/v1';
-
-export const API_MODE = 'real';
-
-async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      ...options?.headers,
-    },
-  });
-
-  if (!response.ok) {
-    let errorMsg = `API request failed with status ${response.status}`;
-    try {
-      const errJson = await response.json();
-      errorMsg = errJson.message || JSON.stringify(errJson);
-    } catch {
-      // ignore
-    }
-    throw new Error(errorMsg);
-  }
-
-  if (response.status === 204) {
-    return {} as T;
-  }
-
-  return response.json();
-}
+export const API_MODE = process.env.NEXT_PUBLIC_API_MODE ?? 'mock';
 
 export const apiService = {
-  getBundle(): Promise<WorkspaceBundle> {
-    return request<WorkspaceBundle>('/bundle');
-  },
+  register: (name: string, email: string, password: string): Promise<AuthResponse> =>
+    mockApiClient.register(name, email, password),
 
-  resetDemoData(): Promise<WorkspaceBundle> {
-    return request<WorkspaceBundle>('/demo/reset', {
-      method: 'POST',
-    });
-  },
+  login: (email: string, password: string): Promise<AuthResponse> =>
+    mockApiClient.login(email, password),
 
-  updateWorkspace(
+  logout: (): Promise<void> => mockApiClient.logout(),
+
+  me: (): Promise<AuthUser> => mockApiClient.me(),
+
+  getBundle: (workspaceId?: string): Promise<WorkspaceBundle> =>
+    mockApiClient.getBundle(workspaceId),
+
+  createWorkspace: (input: CreateWorkspaceInput): Promise<Workspace> =>
+    mockApiClient.createWorkspace(input),
+
+  updateWorkspace: (
     workspaceId: string,
     patch: Partial<Pick<Workspace, 'name' | 'industry' | 'plan' | 'accentColor'>>
-  ): Promise<Workspace> {
-    return request<Workspace>(`/workspaces/${encodeURIComponent(workspaceId)}`, {
-      method: 'PATCH',
-      body: JSON.stringify(patch),
-    });
-  },
+  ): Promise<Workspace> => mockApiClient.updateWorkspace(workspaceId, patch),
 
-  createProject(input: CreateProjectInput): Promise<Project> {
-    return request<Project>('/projects', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    });
-  },
+  createProject: (input: CreateProjectInput): Promise<Project> =>
+    mockApiClient.createProject(input),
 
-  createTask(input: CreateTaskInput, actorId: string): Promise<Task> {
-    return request<Task>('/tasks', {
-      method: 'POST',
-      body: JSON.stringify({ ...input, actorId }),
-    });
-  },
+  updateProject: (projectId: string, patch: UpdateProjectInput): Promise<Project> =>
+    mockApiClient.updateProject(projectId, patch),
 
-  updateTask(
-    taskId: string,
-    patch: Partial<Task>,
-    actorId?: string,
-    activityNote?: string
-  ): Promise<Task> {
-    return request<Task>(`/tasks/${encodeURIComponent(taskId)}`, {
-      method: 'PATCH',
-      body: JSON.stringify({
-        ...patch,
-        actorId,
-        activityNote,
-      }),
-    });
-  },
+  deleteProject: (projectId: string): Promise<void> => mockApiClient.deleteProject(projectId),
 
-  deleteTask(taskId: string): Promise<void> {
-    return request<void>(`/tasks/${encodeURIComponent(taskId)}`, {
-      method: 'DELETE',
-    });
-  },
+  createTask: (input: CreateTaskInput): Promise<Task> => mockApiClient.createTask(input),
 
-  addTaskComment(taskId: string, authorId: string, content: string): Promise<Task> {
-    return request<Task>(`/tasks/${encodeURIComponent(taskId)}/comments`, {
-      method: 'POST',
-      body: JSON.stringify({ authorId, content }),
-    });
-  },
+  updateTask: (taskId: string, patch: Partial<Task>, activityNote?: string): Promise<Task> =>
+    mockApiClient.updateTask(taskId, patch, activityNote),
 
-  inviteMember(input: InviteMemberInput): Promise<TeamMember> {
-    return request<TeamMember>('/members', {
-      method: 'POST',
-      body: JSON.stringify(input),
-    });
-  },
+  deleteTask: (taskId: string): Promise<void> => mockApiClient.deleteTask(taskId),
 
-  updateMemberRole(memberId: string, role: MemberRole): Promise<TeamMember> {
-    return request<TeamMember>(`/members/${encodeURIComponent(memberId)}/role`, {
-      method: 'PATCH',
-      body: JSON.stringify({ role }),
-    });
-  },
+  addTaskComment: (taskId: string, content: string): Promise<Task> =>
+    mockApiClient.addTaskComment(taskId, content),
+
+  createMember: (input: CreateMemberInput): Promise<TeamMember> =>
+    mockApiClient.createMember(input),
+
+  updateMemberRole: (
+    workspaceId: string,
+    memberId: string,
+    role: MemberRole
+  ): Promise<TeamMember> => mockApiClient.updateMemberRole(workspaceId, memberId, role),
+
+  removeMember: (workspaceId: string, memberId: string): Promise<void> =>
+    mockApiClient.removeMember(workspaceId, memberId),
 };

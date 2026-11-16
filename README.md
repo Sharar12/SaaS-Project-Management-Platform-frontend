@@ -1,34 +1,38 @@
-# OrbitFlow Frontend
+# OrbitFlow Frontend — Multi-Company Edition
 
-Next.js 15 App Router frontend using React 19, TypeScript, Tailwind CSS, and Lucide icons.
+Next.js 15 + React 19 + TypeScript frontend with demo-mode multi-account registration, login, company creation, company switching, team roles and company-scoped tasks/projects.
 
-## Setup
+## Run locally
 
-```bash
+```powershell
 npm install
-cp .env.example .env.local
+Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Open http://localhost:3000.
+Open `http://localhost:3000/register` to create an account and then create a company. The mock backend is stored in browser LocalStorage and is intended only for local demonstration. Use `/login` to sign in.
 
-## Scripts
+## Demo accounts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Development server |
-| `npm run build` | Production build |
-| `npm run start` | Production server |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript check |
+- `amina@orbittech.io` / `password123` — OrbitTech owner
+- `liam@orbittech.io` / `password123` — OrbitTech member
+- `elena@novastudio.co` / `password123` — Nova Studio owner
 
-## Configuration
+## Checks
 
-- `NEXT_PUBLIC_API_MODE=mock` selects the current local mock adapter.
-- `NEXT_PUBLIC_API_URL` is the planned Laravel API base URL.
+```powershell
+npm run typecheck
+npm run lint
+npm run build
+```
 
-The current adapter intentionally uses the mock backend until Laravel endpoints are implemented. The only file that imports from `src/mock-backend/` is `src/services/apiService.ts`.
+## Switch to Laravel
 
-## Data reset
+Replace `src/services/apiService.ts` with the contents of `../backend/integration/apiService.laravel.ts` and set:
 
-Mock data is stored in browser `localStorage` (`orbitflow_mock_db_v1`). Use Settings → Reset Demo Data to restore the sample workspace data.
+```env
+NEXT_PUBLIC_API_MODE=laravel
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+```
+
+The mock backend can then be removed after the Laravel adapter is connected and tested.

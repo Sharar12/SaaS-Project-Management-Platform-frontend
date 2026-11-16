@@ -4,6 +4,17 @@ export type ProjectStatus = 'active' | 'planning' | 'on_hold' | 'completed';
 export type MemberRole = 'owner' | 'admin' | 'member' | 'viewer';
 export type PlanTier = 'free' | 'pro' | 'enterprise';
 
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
+}
+
 export interface Workspace {
   id: string;
   name: string;
@@ -11,11 +22,13 @@ export interface Workspace {
   industry: string;
   plan: PlanTier;
   accentColor: string;
+  myRole?: MemberRole;
   createdAt: string;
 }
 
 export interface TeamMember {
   id: string;
+  userId?: string | null;
   workspaceId: string;
   name: string;
   email: string;
@@ -82,6 +95,12 @@ export interface ActivityLog {
   timestamp: string;
 }
 
+export interface CreateWorkspaceInput {
+  name: string;
+  industry: string;
+  accentColor: string;
+}
+
 export interface CreateProjectInput {
   workspaceId: string;
   name: string;
@@ -93,6 +112,15 @@ export interface CreateProjectInput {
   dueDate: string;
   leadId: string;
   tags: string[];
+}
+
+export interface UpdateProjectInput {
+  name?: string;
+  description?: string;
+  status?: ProjectStatus;
+  color?: string;
+  dueDate?: string;
+  tags?: string[];
 }
 
 export interface CreateTaskInput {
@@ -109,16 +137,19 @@ export interface CreateTaskInput {
   estimatedHours: number;
 }
 
-export interface InviteMemberInput {
+export interface CreateMemberInput {
   workspaceId: string;
   name: string;
   email: string;
+  password?: string;
   role: MemberRole;
   title: string;
 }
 
 export interface WorkspaceBundle {
+  user: AuthUser;
   workspaces: Workspace[];
+  activeWorkspaceId: string | null;
   projects: Project[];
   tasks: Task[];
   members: TeamMember[];
