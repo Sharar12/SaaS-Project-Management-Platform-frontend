@@ -143,10 +143,10 @@ export function SettingsView() {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900">
-                API Mode: <span className="uppercase text-emerald-600">{API_MODE} (MySQL saas_bd)</span>
+                API Mode: <span className="uppercase text-emerald-600">{API_MODE} (MySQL saas_db)</span>
               </h3>
               <p className="text-xs text-slate-500 mt-0.5 max-w-lg leading-relaxed">
-                Connected to Laravel backend running on <code>http://127.0.0.1:8000/api/v1</code> with MySQL database <code>saas_bd</code>.
+                Connected to Laravel backend running on <code>http://127.0.0.1:8000/api/v1</code> with MySQL database <code>saas_db</code>.
               </p>
             </div>
           </div>
