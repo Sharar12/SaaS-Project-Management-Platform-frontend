@@ -3,8 +3,8 @@
 This document provides exact instructions on **where to go**, **what to click**, **what data to enter**, and **what exact behavior to expect** for every feature and page.
 
 **Marking Convention:**
-- `[x]` Passed (Verified against running Next.js + Laravel + MySQL `saas_db`)
-- `[-]` Failed / Issue Found
+- `[?]` Passed (Tick / Correct) (Verified against running Next.js + Laravel + MySQL `saas_db`)
+- `[?]` Failed (Cross / Incorrect) / Issue Found
 - `[ ]` Pending / Untested
 
 ---
@@ -36,7 +36,7 @@ Ensure both servers are running:
   - The dropdown closes.
   - The header title changes from "OrbitTech Product Overview" to "Nova Creative Studio Overview".
   - The projects and tasks update to show Nova's projects (`Q4 Global Brand Re-launch`).
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Verified workspace isolation and multi-tenant bundle switching.
 
 ---
@@ -55,7 +55,7 @@ Ensure both servers are running:
   - The URL in the address bar changes accordingly (`/projects`, `/board`, `/tasks`, etc.).
   - The clicked item becomes highlighted with an active background color (darker text and light gray/indigo pill background) while inactive items remain muted.
   - Page transitions without full browser reload.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** All routes respond with HTTP 200 and Next.js client-side navigation.
 
 ---
@@ -67,7 +67,7 @@ Ensure both servers are running:
 - **What you should expect:**
   - The task list automatically filters down to tasks containing "CORE" or "MySQL" in their code, title, or tags.
   - Clear the search bar text; all tasks return to view.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Client-side predicate filters active tasks across code, title, and tags smoothly.
 
 ---
@@ -78,7 +78,7 @@ Ensure both servers are running:
 - **What you should expect:**
   - The "Create Deliverable / Task" modal pops up smoothly over the settings screen.
   - Click the `✕` close button or click outside the modal backdrop; the modal closes without side effects.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Global modal state works across all pages.
 
 ---
@@ -95,7 +95,7 @@ Ensure both servers are running:
 - **What you should expect:**
   - Values match the active workspace.
   - A subtle hover elevation effect occurs when mousing over each card.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Metrics match bundle payload loaded from MySQL.
 
 ---
@@ -109,7 +109,7 @@ Ensure both servers are running:
 - **Next test:** Return to `/` and click `+ Add Deliverable`.
 - **What you should expect:**
   - Opens the "Create Deliverable / Task" modal.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Button rightIcon DOM issue resolved; routing and modal trigger verified.
 
 ---
@@ -120,7 +120,7 @@ Ensure both servers are running:
 - **What you should expect:**
   - Lists each project with its colored square badge (`CORE`, `UIX`, `BILL`).
   - Displays a percentage progress bar and active task count for each.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Displays calculated percentage based on completed vs total tasks.
 
 ---
@@ -131,7 +131,7 @@ Ensure both servers are running:
 - **What you should expect:**
   - Shows activity items (e.g. "Sofia Chen completed CORE-101", "Liam Carter requested review").
   - Displays user initials avatar, relative timestamp, and target title.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Seeded and dynamic activity logs populate properly.
 
 ---
@@ -145,7 +145,7 @@ Ensure both servers are running:
   - Clicking `Active` shows only active initiatives.
   - Clicking `Planning` shows planning stage projects (e.g., `BILL`).
   - Clicking `All` restores all projects.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Filter switches between active and planning initiatives cleanly.
 
 ---
@@ -168,7 +168,7 @@ Ensure both servers are running:
   - A green toast appears: *"Project created successfully"*.
   - A new project card titled `Cloud Storage Integration` appears in the grid with key `DEMO`.
   - Refresh the browser (`F5`); the project remains saved in MySQL `saas_db`.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Tested with `POST /api/v1/projects`; created with 201 status and persisted in MySQL.
 
 ---
@@ -180,7 +180,7 @@ Ensure both servers are running:
 - **What to inspect:**
   - Check the 4 lanes: **To Do**, **In Progress**, **In Review**, and **Done**.
   - Each column header displays a count pill showing the number of tasks in that status.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** All 4 lanes render with correct count headers.
 
 ---
@@ -190,7 +190,7 @@ Ensure both servers are running:
 - **What to click:** Click on the card **"CORE-102"** (or any task).
 - **What you should expect:**
   - A right-side slide-over drawer opens showing the task's full details: title, description, assignee, priority badge, subtasks, and comments.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Drawer opens and sets active task context.
 
 ---
@@ -200,7 +200,7 @@ Ensure both servers are running:
 - **What to click:** Click the `+` icon on the **"In Progress"** column header.
 - **What you should expect:**
   - Opens the "Create Deliverable / Task" modal with Status automatically preset to **"In Progress"**.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Column-specific creation tested and verified.
 
 ---
@@ -215,7 +215,7 @@ Ensure both servers are running:
   - The checkbox toggles between checked and unchecked.
   - The text shows a strikethrough when checked.
   - Refresh the page (`F5`); the toggled subtask status persists in MySQL.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Subtask array synchronization verified via PATCH endpoint.
 
 ---
@@ -228,7 +228,7 @@ Ensure both servers are running:
 - **What you should expect:**
   - The new comment appears immediately at the bottom of the comment list with your user avatar and "Just now".
   - A success toast confirms the comment was posted.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Verified via `POST /api/v1/tasks/{id}/comments`.
 
 ---
@@ -241,7 +241,7 @@ Ensure both servers are running:
 - **What you should expect:**
   - The drawer updates.
   - Closing the drawer shows the card has moved to the **"Done"** column on the Kanban board.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Tested with PATCH task update; status and priority update atomically in database.
 
 ---
@@ -254,7 +254,7 @@ Ensure both servers are running:
   - The drawer closes.
   - The task disappears from the board and task table.
   - A toast notifications says *"Task deleted"*.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Tested with `DELETE /api/v1/tasks/{id}`; returns 204 No Content.
 
 ---
@@ -266,7 +266,7 @@ Ensure both servers are running:
 - **What to inspect:**
   - Verify table columns: **Code**, **Title**, **Project**, **Status**, **Priority**, **Assignee**, and **Due Date**.
   - Status badges should have distinct colors (e.g. Green for Done, Amber for In Progress, Purple for In Review).
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Table layout is fully styled with Tailwind v4 utilities.
 
 ---
@@ -276,7 +276,7 @@ Ensure both servers are running:
 - **What to click:** Click anywhere on a task row.
 - **What you should expect:**
   - The Task Detail Drawer slides in with that exact task's information.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Row click handler binds properly to drawer open.
 
 ---
@@ -295,7 +295,7 @@ Ensure both servers are running:
 - **What you should expect:**
   - Modal closes.
   - The new task appears in the table with its generated code (e.g. `CORE-103`).
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Auto-generates task code sequence (e.g. `CORE-103`) and inserts into database.
 
 ---
@@ -307,7 +307,7 @@ Ensure both servers are running:
 - **What to inspect:**
   - Displays horizontal date/month grid headers.
   - Shows task schedule bars with colored project markers.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Renders tasks plotted by start date and due date.
 
 ---
@@ -317,7 +317,7 @@ Ensure both servers are running:
 - **What to click:** Click directly on one of the horizontal timeline bars.
 - **What you should expect:**
   - Opens the Task Detail Drawer for that task.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Bar click triggers task drawer context.
 
 ---
@@ -329,7 +329,7 @@ Ensure both servers are running:
 - **What to inspect:**
   - Displays team members cards or table (e.g. Amina Rahman, Liam Carter, Sofia Chen).
   - Shows Avatar circle with initials, role badge (`Owner`, `Admin`, `Member`), email address, and online status indicator dot.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Renders all 6 seeded team members across both workspaces.
 
 ---
@@ -348,7 +348,7 @@ Ensure both servers are running:
   - A green toast appears: *"Member added successfully"*.
   - Sarah Jenkins appears in the team list with initials `SJ`.
   - Refresh the page (`F5`); Sarah remains saved in MySQL `saas_db`.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Tested with `POST /api/v1/members`; generates avatar palette color and stores in MySQL.
 
 ---
@@ -360,7 +360,7 @@ Ensure both servers are running:
   - Role badge updates immediately to `Admin`.
   - A toast confirms *"Member role updated"*.
   - Refresh the browser; role stays `Admin`.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Tested with `PATCH /api/v1/members/{id}/role`; returns updated member with new role.
 
 ---
@@ -374,7 +374,7 @@ Ensure both servers are running:
   - Industry input (pre-filled with `SaaS Engineering`).
   - Plan badge showing `pro`.
   - Accent Color picker or swatch preview.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Form controls correctly bind to active workspace state.
 
 ---
@@ -387,7 +387,7 @@ Ensure both servers are running:
   - A toast confirms *"Workspace settings saved"*.
   - The sidebar top label changes from "OrbitTech Product" to "OrbitTech Global".
   - Refresh the browser; the new name persists from MySQL.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Tested with `PATCH /api/v1/workspaces/ws-1`; name updated and persisted.
 
 ---
@@ -398,7 +398,7 @@ Ensure both servers are running:
 - **What you should expect:**
   - Displays: **`API MODE: REAL (MYSQL SAAS_DB)`** in green text.
   - Mentions connection to `http://127.0.0.1:8000/api/v1`.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Status pill correctly reflects connected state.
 
 ---
@@ -410,7 +410,7 @@ Ensure both servers are running:
   - The database is re-seeded cleanly with the initial seed data.
   - A toast notifications says *"Database restored to clean seed state"*.
   - Workspace name resets back to `OrbitTech Product`.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Tested with `POST /api/v1/demo/reset`; cleanly restores original seed data.
 
 ---
@@ -425,7 +425,7 @@ Ensure both servers are running:
   - "Don't have an account? Sign up" link at the bottom.
 - **What to click:** Click the **"Sign up"** link.
 - **What you should expect:** Navigates smoothly to `/register`.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Route `/login` returns HTTP 200 and renders properly.
 
 ---
@@ -438,7 +438,7 @@ Ensure both servers are running:
   - "Already have an account? Sign in" link.
 - **What to click:** Click the **"Sign in"** link.
 - **What you should expect:** Navigates back to `/login`.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Route `/register` returns HTTP 200 and renders properly.
 
 ---
@@ -456,7 +456,7 @@ Ensure both servers are running:
 - **What you should expect:**
   - `Alpha Launch` project and `Configure Domain DNS` task are still present in `In Progress` column with the subtask preserved.
   - Confirms frontend is 100% communicating with Laravel and MySQL `saas_db`.
-- **Status:** `[x]`
+- **Status:** [✔]
 - **Notes:** Verified end-to-end against live Laravel service on port 8000 and MySQL `saas_db`.
 
 ---
@@ -464,8 +464,8 @@ Ensure both servers are running:
 ## Test Execution Summary
 
 - **Total Test Cases:** 27 Detailed Scenarios
-- **Passed (`[x]`):** 27
-- **Failed (`[-]`):** 0
+- **Passed (`[?]`):** 27
+- **Failed (`[?]`):** 0
 - **Pending (`[ ]`):** 0
 - **Tested By:** Antigravity Automated QA Runner
 - **Date Tested:** 2026-11-16
